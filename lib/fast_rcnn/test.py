@@ -169,7 +169,7 @@ def im_detect(net, im, boxes=None):
 
     if cfg.TEST.BBOX_REG:
         # Apply bounding-box regression deltas
-        box_deltas = blobs_out['bbox_pred']
+        box_deltas = blobs_out['bbox_pred_turtle']
         pred_boxes = bbox_transform_inv(boxes, box_deltas)
         pred_boxes = clip_boxes(pred_boxes, im.shape)
     else:
@@ -266,8 +266,11 @@ def test_net(net, imdb, max_per_image=100, thresh=0.05, vis=False):
             cls_boxes = boxes[inds, j*4:(j+1)*4]
             cls_dets = np.hstack((cls_boxes, cls_scores[:, np.newaxis])) \
                 .astype(np.float32, copy=False)
+            print 'dets_num = {:d}'.format(cls_dets.shape[0])
             keep = nms(cls_dets, cfg.TEST.NMS)
+#            print 'nms = {:f}'.format(cfg.TEST.NMS)
             cls_dets = cls_dets[keep, :]
+            print 'dets_num_after = {:d}'.format(cls_dets.shape[0])
             if vis:
                 vis_detections(im, imdb.classes[j], cls_dets)
             all_boxes[j][i] = cls_dets
@@ -288,6 +291,7 @@ def test_net(net, imdb, max_per_image=100, thresh=0.05, vis=False):
                       _t['misc'].average_time)
 
     det_file = os.path.join(output_dir, 'detections.pkl')
+    print 'det_file = {:s}'.format(det_file)
     with open(det_file, 'wb') as f:
         cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
 

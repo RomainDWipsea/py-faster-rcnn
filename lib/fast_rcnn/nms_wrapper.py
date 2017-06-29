@@ -15,6 +15,8 @@ def nms(dets, thresh, force_cpu=False):
     if dets.shape[0] == 0:
         return []
     if cfg.USE_GPU_NMS and not force_cpu:
+        print 'I use gpu hahaha'
         return gpu_nms(dets, thresh, device_id=cfg.GPU_ID)
     else:
+        print 'Ok I use CPU cause I dont have gpu'
         return cpu_nms(dets, thresh)
