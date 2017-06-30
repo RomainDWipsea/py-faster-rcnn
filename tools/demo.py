@@ -37,7 +37,7 @@ NETS = {'vgg16': ('VGG16',
                   'ZF_faster_rcnn_final.caffemodel')}
 
 
-def vis_detections(im, class_name, dets, thresh=0.5):
+def vis_detections(im, class_name, dets, image_name, thresh=0.5):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
@@ -56,17 +56,22 @@ def vis_detections(im, class_name, dets, thresh=0.5):
                           bbox[3] - bbox[1], fill=False,
                           edgecolor='red', linewidth=3.5)
             )
+        # ax.text(bbox[0], bbox[1] - 2,
+        #         '{:s} {:.3f}'.format(class_name, score),
+        #         bbox=dict(facecolor='blue', alpha=0.5),
+        #         fontsize=14, color='white')
         ax.text(bbox[0], bbox[1] - 2,
-                '{:s} {:.3f}'.format(class_name, score),
+                '{:s}'.format(class_name),
                 bbox=dict(facecolor='blue', alpha=0.5),
                 fontsize=14, color='white')
 
-    ax.set_title(('{} detections with '
-                  'p({} | box) >= {:.1f}').format(class_name, class_name,
-                                                  thresh),
-                  fontsize=14)
+    # ax.set_title(('{} detections with '
+    #               'p({} | box) >= {:.1f}').format(class_name, class_name,
+    #                                               thresh),
+    #    fontsize=14)
     plt.axis('off')
     plt.tight_layout()
+    plt.savefig(class_name+image_name)
     plt.draw()
 
 def demo(net, image_name):
@@ -95,7 +100,7 @@ def demo(net, image_name):
                           cls_scores[:, np.newaxis])).astype(np.float32)
         keep = nms(dets, NMS_THRESH)
         dets = dets[keep, :]
-        vis_detections(im, cls, dets, thresh=CONF_THRESH)
+        vis_detections(im, cls, dets,  image_name, thresh=CONF_THRESH)
 
 def parse_args():
     """Parse input arguments."""
@@ -118,7 +123,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
-                            'faster_rcnn_alt_oppt', 'faster_rcnn_test.pt')
+                            'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
     caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
                               NETS[args.demo_net][1])
 
@@ -141,8 +146,10 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
-    im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
-                '001763.jpg', '004545.jpg']
+#    im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
+ #               '001763.jpg', '004545.jpg']
+    im_names = ['1.JPG','2.JPG','3.JPG','4.JPG','5.JPG',
+                '6.JPG','7.JPG','8.JPG','9.JPG']
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Demo for data/demo/{}'.format(im_name)
