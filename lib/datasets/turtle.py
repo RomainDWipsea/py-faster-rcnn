@@ -345,3 +345,8 @@ class turtle(imdb):
         else:
             self.config['use_salt'] = True
             self.config['cleanup'] = True
+
+    def write_results(self, all_boxes):
+        self._write_turtle_results_file(all_boxes)
+        return True
+    
