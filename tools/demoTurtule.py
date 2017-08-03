@@ -14,7 +14,7 @@ See README.md for installation instructions before running.
 """
 
 import _init_paths
-from fast_rcnn.config import cfg
+from fast_rcnn.config import cfg, cfg_from_file
 from fast_rcnn.test import im_detect
 from fast_rcnn.nms_wrapper import nms
 from utils.timer import Timer
@@ -25,19 +25,14 @@ import caffe, os, sys, cv2
 import argparse
 
 CLASSES = ('__background__',
-           'aeroplane', 'bicycle', 'bird', 'boat',
-           'bottle', 'bus', 'car', 'cat', 'chair',
-           'cow', 'diningtable', 'dog', 'horse',
-           'motorbike', 'person', 'pottedplant',
-           'sheep', 'sofa', 'train', 'tvmonitor')
+           'megaptera')
 
 NETS = {'vgg16': ('VGG16',
                   'VGG16_faster_rcnn_final.caffemodel'),
         'zf': ('ZF',
-                  'ZF_faster_rcnn_final.caffemodel')}
+               'zf_faster_rcnn_megaExp1_iter_3000.caffemodel')}
 
-
-def vis_detections(im, class_name, dets, image_name, thresh=0.5):
+def vis_detections(im, class_name, dets, image_name, thresh=0.3):
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
@@ -56,19 +51,19 @@ def vis_detections(im, class_name, dets, image_name, thresh=0.5):
                           bbox[3] - bbox[1], fill=False,
                           edgecolor='red', linewidth=3.5)
             )
-        # ax.text(bbox[0], bbox[1] - 2,
-        #         '{:s} {:.3f}'.format(class_name, score),
-        #         bbox=dict(facecolor='blue', alpha=0.5),
-        #         fontsize=14, color='white')
+        ax.text(bbox[0], bbox[1] - 2,
+                 '{:s} {:.3f}'.format(class_name, score),
+                 bbox=dict(facecolor='blue', alpha=0.5),
+                 fontsize=14, color='white')
         ax.text(bbox[0], bbox[1] - 2,
                 '{:s}'.format(class_name),
                 bbox=dict(facecolor='blue', alpha=0.5),
                 fontsize=14, color='white')
 
-    # ax.set_title(('{} detections with '
-    #               'p({} | box) >= {:.1f}').format(class_name, class_name,
-    #                                               thresh),
-    #    fontsize=14)
+    ax.set_title(('{} detections with '
+                  'p({} | box) >= {:.1f}').format(class_name, class_name,
+                                                  thresh),
+       fontsize=14)
     plt.axis('off')
     plt.tight_layout()
     plt.savefig(class_name+image_name)
@@ -90,7 +85,7 @@ def demo(net, image_name):
            '{:d} object proposals').format(timer.total_time, boxes.shape[0])
 
     # Visualize detections for each class
-    CONF_THRESH = 0.2
+    CONF_THRESH = 0.1
     NMS_THRESH = 0.3
     for cls_ind, cls in enumerate(CLASSES[1:]):
         cls_ind += 1 # because we skipped background
@@ -112,6 +107,8 @@ def parse_args():
                         action='store_true')
     parser.add_argument('--net', dest='demo_net', help='Network to use [vgg16]',
                         choices=NETS.keys(), default='vgg16')
+    parser.add_argument('--cfg', dest='cfg_file',
+                        help='optional config file', default=None, type=str)
 
     args = parser.parse_args()
 
@@ -122,9 +119,12 @@ if __name__ == '__main__':
 
     args = parse_args()
 
+    if args.cfg_file is not None:
+        cfg_from_file(args.cfg_file)
+
     prototxt = os.path.join(cfg.MODELS_DIR, NETS[args.demo_net][0],
-                            'faster_rcnn_alt_opt', 'faster_rcnn_test.pt')
-    caffemodel = os.path.join(cfg.DATA_DIR, 'faster_rcnn_models',
+                            'faster_rcnn_end2end', 'test.prototxt')
+    caffemodel = os.path.join(cfg.DATA_DIR, 'turtle_models',
                               NETS[args.demo_net][1])
 
     if not os.path.isfile(caffemodel):
@@ -146,9 +146,11 @@ if __name__ == '__main__':
     for i in xrange(2):
         _, _= im_detect(net, im)
 
+
 #    im_names = ['000456.jpg', '000542.jpg', '001150.jpg',
- #               '001763.jpg', '004545.jpg']
-    im_names = ['DJI_0044_0.JPG', 'DJI_0045_0.JPG', 'DJI_0046_0.JPG', 'DJI_0046_1.JPG', 'DJI_0063_2.JPG', 'DJI_0064_0.JPG', 'DJI_0064_1.JPG', 'DJI_0064_2.JPG', 'DJI_0539_6.JPG', 'DJI_0540_0.JPG', 'DJI_0540_1.JPG', 'DJI_0540_2.JPG']
+#               '001763.jpg', '004545.jpg']
+    im_names = ['DJI_0076_0.JPG', 'DJI_0077_0.JPG', 'DJI_0078_0.JPG', 'DJI_0079_0.JPG', 'DJI_0080_0.JPG', 'DJI_0081_0.JPG', 'DJI_0076_1.JPG', 'DJI_0077_1.JPG', 'DJI_0078_1.JPG', 'DJI_0079_1.JPG', 'DJI_0080_1.JPG']
+
     for im_name in im_names:
         print '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         print 'Demo for data/demo/{}'.format(im_name)
